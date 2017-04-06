@@ -13,6 +13,74 @@ import requests
 import urlparse
 from models import UserProfile
 
+################################### api routes ##################################
+@app.route('/api/users/register', methods=["POST"])
+def apiregister():
+    #save registration details to database
+    firstname= request.form['firstname']
+    lastname= request.form['lastname']
+    username= request.form['username']
+    password= hash(request.form['password'])
+    email_address=request.form['email']
+    pword_hint=request.form['hint']
+        
+    user= UserProfile(first_name=firstname, last_name=lastname, username=username, password= password, email_address = email_address, pword_hint = pword_hint)
+    db.session.add(user)
+    db.session.commit()
+    quit()
+    return # json status message success or failure
+
+@app.route('/api/users/login', methods=["POST"])
+def apilogin():
+    # log user in
+    return # json status message success or failure
+
+@app.route('/api/users/{userid}/wishlist', methods=["POST"])
+def apiadd(userid):
+    # add items to users wish list
+    return # json status message success or failure
+
+@app.route('/api/users/{userid}/wishlist', methods=["GET"])
+def apiwishlist(userid):
+    # get users wishlist from database
+    return #json wishlist
+
+@app.route('/api/thumbnails', methods=["GET"])
+def apithumbnails():
+    #scrape url for images
+    return # json containg list of image urls
+
+@app.route('/api/users/{userid}/wishlist/{itemid}', methods=["DELETE"])
+def apiremove(userid,itemid):
+    # delete item from users wishlish
+    return # json status message success or failure
+
+################################## app routes ##########################
+@app.route('/register_form', methods=["POST"])
+def register():
+    #get form data
+    password = request.form['password']
+    confirm = request.form['confirm-password']
+    
+    #verify password and confirm passsword match
+    if password != confirm:
+        error = "password does not match"
+        return render_template('home.html', error = error)
+    
+    #call apiregister
+    
+    message ="registration successful"
+    return render_template('home.html', message = message) #login page
+
+@app.route('/login_form')
+def loginb():
+    #get form data
+    
+    #call apilogin
+    return #wishlist page
+
+
+
 
 ###
 # Routing for your application.
