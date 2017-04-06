@@ -11,7 +11,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from bs4 import BeautifulSoup
 import requests
 import urlparse
-from models import UserProfile
+from models import WishersInfo
 
 
 ###
