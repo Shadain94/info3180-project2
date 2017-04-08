@@ -9,6 +9,7 @@ Flask-Login
 psycopg2
 beautifulsoup4
 requests
+bs4
 
 # ----------------------
 # Production Server

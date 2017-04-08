@@ -135,3 +135,10 @@ body{
 	background-color: #1CA347;
 	border-color: #1CA347;
 }
+
+#space{
+	
+	height: 40px;
+	width:200px;
+	margin: 0 auto;
+}

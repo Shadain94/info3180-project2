@@ -28,7 +28,7 @@ def about():
     """Render the website's about page."""
     return render_template('about.html')
     
-@app.route('/add_user', methods=[ "GET", "POST"])
+@app.route('/api/users/register', methods=["POST"])
 def add_user():
     
     """Render the website's add user page."""
@@ -36,53 +36,49 @@ def add_user():
         firstname= request.form['firstname']
         lastname= request.form['lastname']
         username= request.form['username']
-        password= hash(request.form['password'])
-        
-        user= UserProfile(first_name=firstname, last_name=lastname, username=username, password= password)
+        email=request.form['email']
+        p_hint=request.form['hint']
+        password= hash(request.form['password']+str("i am a not so secret salt"))
+        user= WishersInfo(first_name=firstname, last_name=lastname, username=username, password= password, email_address=email, pword_hint=p_hint)
         db.session.add(user)
         db.session.commit()
-        quit()
+        login_user(user)
+        flash('Account created successfully.','success')
+        return redirect(url_for("wishers_page"))
     
     
-    return render_template('add_user.html')
+    return render_template('home.html')
     
     
-@app.route('/secure_page/')
-@login_required
-def secure_page():
-    """Render a secure page on our website that only logged in users can access."""
-    return render_template('secure_page.html')
-    
-
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/api/users/login', methods=["POST"])
 def login():
-    
-    if current_user.is_authenticated:
+    """Render the website's login user page."""
+    if request.method=='POST':
+        email=request.form['email']
+        password=request.form['password']
+        user = WishersInfo.query.filter_by(email_address=email, password=password).first()
+        if user is not None:
+            login_user(user)
+            flash('Logged in successfully.', 'success')
+            return redirect(url_for("wishers_page"))
+        else:
+            flash('Email or Password is incorrect.', 'danger')
+            
+            
+            
+    return render_template("home.html")
+            
         
-        # if user is already logged in, just redirec them to our secure page
-        # or some other page like a dashboard
-        return redirect(url_for('secure_page'))
+    
+    
+    
+@app.route('/wishers_page/')
+@login_required
+def wishers_page():
+    """Render the  wishers page on our website that only logged in users can access."""
+    return render_template('wishers_page.html')
     
 
-    
-    # if request.method == "POST" and form.validate_on_submit():
-        
-    #     username = form.username.data
-    #     password = form.password.data
-        
-    #     user = UserProfile.query.filter_by(username=username, password=password).first()
-        
-    #     if user is not None:
-    #         login_user(user)
-            
-    #         flash('Logged in successfully.', 'success')
-            
-    #         return redirect(url_for("secure_page"))
-    #     else:
-    #         flash('Username or Password is incorrect.', 'danger')
-    
-            
-    return render_template("login.html")
 
 # user_loader callback. This callback is used to reload the user object from
 # the user ID stored in the session
