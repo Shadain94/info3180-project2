@@ -3,6 +3,9 @@
 {% block main %}
 
 <div class="container">
+	<div>
+		{{message}}
+	</div>
     	<div class="row">
 			<div class="col-md-6 col-md-offset-3">
 				<div class="panel panel-login">
@@ -53,28 +56,33 @@
 										</div>
 									</div>
 								</form>
+
 								<form id="register-form" action="/api/users/register" method="post" role="form" style="display: none;">
+
 									<div class="form-group">
-										<input type="text" name="firstname" id="firstname" tabindex="1" class="form-control" placeholder="First Name" value="">
+										<input value = "jhon" type="text" name="firstname" id="firstname" tabindex="1" class="form-control" placeholder="First Name" value="">
 									</div>
 						
 									<div class="form-group">
-										<input type="text" name="lastname" id="lastname" tabindex="1" class="form-control" placeholder="Last Name" value="">
+										<input value = "doe" type="text" name="lastname" id="lastname" tabindex="1" class="form-control" placeholder="Last Name" value="">
 									</div>
 									<div class="form-group">
-										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
+										<input value = "jhondoe" type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
 									</div>
 									<div class="form-group">
-										<input type="email" name="email" id="email" tabindex="1" class="form-control" placeholder="Email Address" value="">
+										<input value = "jhondoe@gmail.com" type="email" name="email" id="email" tabindex="1" class="form-control" placeholder="Email Address" value="">
 									</div>
 									<div class="form-group">
-										<input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
+										<input value = "123" type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
 									</div>
 									<div class="form-group">
-										<input type="password" name="confirm-password" id="confirm-password" tabindex="2" class="form-control" placeholder="Confirm Password">
+										<input value = "123" type="password" name="confirm-password" id="confirm-password" tabindex="2" class="form-control" placeholder="Confirm Password">
+									</div>
+									<div>
+										{{error}}
 									</div>
 									<div class="form-group">
-										<input type="text" name="hint" id="hint" tabindex="1" class="form-control" placeholder=" Password Hint" value="">
+										<input value = "123" type="text" name="hint" id="hint" tabindex="1" class="form-control" placeholder=" Password Hint" value="">
 									</div>
 									<div class="form-group">
 										<div class="row">
