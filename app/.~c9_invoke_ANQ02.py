@@ -27,22 +27,17 @@ def home():
 @app.route('/api/users/register', methods=['POST'])
 def apiregister():
 
-    firstname= request.form['firstname']
-    lastname= request.form['lastname']
-    username= request.form['username']
-    password= request.form['password']
-    email_address=request.form['email']
-    confirm_pass=request.form['confirm-password']
-    pword_hint=request.form['hint']
-    if confirm_pass==password:
-        user=  Person(first_name=firstname, last_name=lastname, username=username, password= password, email_address = email_address, pword_hint = pword_hint)
-        db.session.add(user)
-        db.session.commit()
-        flash("Now you may login new Wisher")
-        return redirect(url_for('home'))
-    else:
-        flash("Your password didn't match the confirmmation password")
-        return redirect(url_for('home'))
+    firstname= request.['fname']
+    lastname= request.json['lname']
+    username= request.json['uname']
+    password= request.json['password']
+    email_address=request.json['email']
+    pword_hint=request.json['hint']
+    
+    user=  Person(first_name=firstname, last_name=lastname, username=username, password= password, email_address = email_address, pword_hint = pword_hint)
+    db.session.add(user)
+    db.session.commit()
+    
     
     return render_template('home.html')
     
@@ -51,17 +46,17 @@ def apiregister():
 @app.route('/api/users/login', methods=["POST"])
 def login():
     """Render the website's login user page."""
-    email= request.form['email']
-    password= request.form['password']
+    email= request.json['email']
+    password= request.json['password']
     user = Person.query.filter_by(email_address=email, password=password).first()
     if user is not None:
         login_user(user)
-        return render_template('wishers_page.html', loggedUser=user)
-        
+        #return redirect(url_for('wishers_page'))
+        return render_template('wishers_page.html')
+        print "success"
         
     else:
-        flash("Your password or email is incorrect")
-        return redirect(url_for('home'))
+        print "not successful"
             
             
             
@@ -69,36 +64,37 @@ def login():
 
 @app.route('/api/users/{userid}/wishlist', methods=["POST"])
 def apiadd(userid):
+    url=request.json['url']
     person_wish_belong_to = Person.query.filter_by(id=userid)
     new_wish= Wish(wish_name_url=url, person=person_wish_belong_to)
     db.session.add(new_wish)
     db.session.commit()
     
     
-    return #something#
 
-@app.route('/api/thumbnails', methods=['POST'])
-def thumbnail():
-    url = request.json['url']
-    imagelist = get_images(url)
-    for each in imagelist:
-        if not each.lower().endswith(('.png', '.jpg', '.jpeg')):
-            imagelist.remove(each) 
-    imagelist= list(set(imagelist));
-    output = jsonify(error = "null", message = "Success", thumbnails= imagelist)
-    return output
-    
-def get_images(url):
-    result = requests.get(url)
-    soup = BeautifulSoup(result.text, "html.parser")
-    imgs=[]
-    image = "%s"
-    
-    for img in soup.findAll("img", src=True):
-       link = image % urlparse.urljoin(url, img["src"])
-       imgs+=[link]
-    return imgs
 
+@app.route('/api/users/{userid}/wishlist', methods=["GET"])
+def apiwishlist(userid):
+    # get users wishlist from database
+    return #json wishlist
+
+@app.route('/api/thumbnails', methods=["GET"])
+def apithumbnails():
+    #scrape url for images
+    return # json containg list of image urls
+
+@app.route('/api/users/{userid}/wishlist/{itemid}', methods=["DELETE"])
+def apiremove(userid,itemid):
+    # delete item from users wishlish
+    return # json status message success or failure
+
+################################## app routes ##########################
+
+
+
+###
+# Routing for your application.
+###
 
 
 

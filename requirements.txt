@@ -10,6 +10,7 @@ psycopg2
 beautifulsoup4
 requests
 bs4
+PyJWT
 
 # ----------------------
 # Production Server

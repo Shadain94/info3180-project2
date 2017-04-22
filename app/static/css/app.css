@@ -138,7 +138,8 @@ body{
 
 #space{
 	
-	height: 40px;
-	width:200px;
+	height: 80px;
+	width:400px;
+	padding:10px;
 	margin: 0 auto;
 }
