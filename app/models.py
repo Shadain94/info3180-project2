@@ -8,7 +8,6 @@ class Person(db.Model):
     password= db.Column(db.String(255))
     email_address=db.Column(db.String(100))
     pword_hint=db.Column(db.String(100))
-    wish = db.relationship('Wish', backref='person', lazy='dynamic')
 
     def is_authenticated(self):
         return True

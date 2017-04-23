@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = " i have made a quite random key"
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://info3180proj2:master@localhost/proj2"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://good:best@localhost/better"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True # added just to suppress a warning
 

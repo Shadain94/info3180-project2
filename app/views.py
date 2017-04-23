@@ -6,7 +6,7 @@ This file creates your application.
 """
 
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_user, logout_user, current_user, login_required
 from bs4 import BeautifulSoup
 import requests
@@ -15,6 +15,7 @@ from models import Person
 from models import Wish
 import jwt
 import base64
+import datetime
 
 ################################### api routes ##################################
 @app.route('/')
@@ -56,7 +57,8 @@ def login():
     user = Person.query.filter_by(email_address=email, password=password).first()
     if user is not None:
         login_user(user)
-        return render_template('wishers_page.html', loggedUser=user)
+        session['current_user'] = user.id
+        return redirect(url_for('apiadd', userid=user.id))
         
         
     else:
@@ -67,15 +69,21 @@ def login():
             
     return render_template("home.html")
 
-@app.route('/api/users/{userid}/wishlist', methods=["POST"])
-def apiadd(userid):
-    person_wish_belong_to = Person.query.filter_by(id=userid)
-    new_wish= Wish(wish_name_url=url, person=person_wish_belong_to)
-    db.session.add(new_wish)
-    db.session.commit()
+@app.route('/api/users/<userid>/wishlist', methods=["GET","POST"])
+def apiadd(userid): 
     
-    
-    return #something#
+    if request.method == "POST":
+        new_wish= Wish(wish_name_url=request.json['url'], wish_id=session['current_user'] , wish_descript=request.json['description'], title=request.json['title'], thumbnail=request.json['image']);
+        db.session.add(new_wish)
+        db.session.commit()
+        return redirect(url_for('wishers_page'))
+        
+    else:
+        user = Person.query.filter_by(id=session['current_user']).first()
+        userwishes = Wish.query.filter_by(wish_id=userid)
+        return render_template('wishers_page.html',loggedUser=user, wishes=userwishes)
+        #return userwishes
+
 
 @app.route('/api/thumbnails', methods=['POST'])
 def thumbnail():
@@ -85,7 +93,7 @@ def thumbnail():
         if not each.lower().endswith(('.png', '.jpg', '.jpeg')):
             imagelist.remove(each) 
     imagelist= list(set(imagelist));
-    output = jsonify(error = "null", message = "Success", thumbnails= imagelist)
+    output = jsonify(thumbnails= imagelist)
     return output
     
 def get_images(url):
@@ -100,7 +108,19 @@ def get_images(url):
     return imgs
 
 
-
+@app.route('/api/users/{userid}/wishlist/{itemid}', methods=['DELETE'])
+def deletewish(userid,itemid):
+    item_id= request.json['itemid']
+    #because based on the db the wish id and the person/userid are always the same 
+    deleted_wish= Wish.query.filter_by(wish_id=session['current_user'],id= item_id)
+    # use session.delete here instead of add
+    db.session.delete(deleted_wish)
+    db.session.commit()
+    return redirect(url_for('wishers_page'))
+        
+    
+    
+    
 
 @app.route('/about/')
 def about():
@@ -115,6 +135,7 @@ def about():
 @login_required
 def wishers_page():
     """Render the  wishers page on our website that only logged in users can access."""
+    
     return render_template('wishers_page.html')
     
 
@@ -128,6 +149,24 @@ def load_user(id):
 ###
 # The functions below should be applicable to all Flask apps.
 ###
+def send_email():
+    import smtplib 
+    from_addr = request.form['email'] 
+    to_addr  = '@yahoo.com' 
+    from_name = request.form['name']
+    to_name = ''
+    subject = request.form['sub']
+    message = request.form['msg']
+    message_to_send = message.format(from_name, from_addr, to_name, to_addr, subject, message) 
+    # Credentials (if needed) 
+    username = '@gmail.com' 
+    password = 'kecaraajycfwcxud' 
+    # The actual mail send 
+    server = smtplib.SMTP('smtp.gmail.com:587') 
+    server.starttls() 
+    server.login(username, password) 
+    server.sendmail(from_addr, to_addr, message_to_send) 
+    server.quit() 
 
 @app.route('/<file_name>.txt')
 def send_text_file(file_name):
