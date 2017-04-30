@@ -28,12 +28,13 @@ class Person(db.Model):
         return '<User %r>' % (self.username)
         
 class Wish(db.Model):
-    id= db.Column(db.Integer, primary_key=True)
-    wish_name_url=db.Column(db.String(250))
-    wish_id=db.Column(db.Integer, db.ForeignKey('person.id'))
-    wish_descript= db.Column(db.String(40))
-    title=db.Column(db.String(30))
+    wish_id= db.Column(db.Integer, primary_key=True)
+    wish_url=db.Column(db.String(250))
+    user_id=db.Column(db.Integer, db.ForeignKey('person.id'))
+    wish_descript= db.Column(db.String(120))
+    wish_title=db.Column(db.String(30))
     thumbnail=db.Column(db.Text)
+    added = db.Column(db.String(30))
     
     
     def is_authenticated(self):

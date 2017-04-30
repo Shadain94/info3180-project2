@@ -1,23 +1,205 @@
-/* global $*/
 
-var app = angular.module('wish', []);
+/* global $ */
+/* global localStorage */
+var app = angular.module('myApp', ['ngRoute']);
+
+
+
+
+    app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider){
+    $routeProvider
+      .when('/', {
+          templateUrl: '/static/sub/home.html',
+          controller: 'homeCtrl'
+        
+      })
+      .when('/dashboard', {
+          
+        templateUrl: '/static/sub/dashboard.html',
+        controller: 'cardctrl'
+      })
+      .when('/about', {
+          templateUrl: '/static/sub/about.html'
+      })
+      .otherwise ({
+            redirectTo: '/'
+          
+      });
+      
+        $locationProvider.html5Mode({
+          enabled: true
+        });
+    }]);
     
-    app.controller('cardctrl', function($scope, $http) {
+    app.controller('homeCtrl', function($scope, $location, $http, $route) {
+    $scope.login = function() {
+        
+        $('#loading').show();
+        
+        $scope.user = JSON.stringify({'email': $scope.user.email, 'password': $scope.user.password });
+        
+        $http({
+                method: 'POST',
+                url: '/api/users/login', 
+                data: $scope.user,
+                headers: {'Content-Type': 'application/json;charset=UTF-8'}
+            })
+            .then(function (response) {
+
+                var reply =response.data;
+                var new_token= reply['information'].data.token;
+                if(localStorage.getItem(reply['information'].data.user.id)==new_token){
+                    alert('You have successfully been authenticated');
+                    
+                    
+                    
+                }
+
+                
+                sessionStorage.currentUser=  reply['information'].data.user.id;
+                sessionStorage.email= reply['information'].data.user.email;
+                sessionStorage.fname= reply['information'].data.user.fname;
+                sessionStorage.lname= reply['information'].data.user.lname;
+
+                $location.path('/dashboard');
+                $('#loading').hide();
+            })
+            .catch(function(error) {
+              alert(error.data.message, error.status);
+            });
+           
+    };
+    
+    $scope.register = function(){
+      // $scope.user = JSON.stringify({''})
+      $('#loading').show();
+      $http({
+          method: 'POST',
+          url: '/api/users/register',
+          data: JSON.stringify({'firstname': $scope.firstname, 'lastname': $scope.lastname, 'email': $scope.email, 'username': $scope.username, 'password': $scope.password, 'confirm-password': $scope.passwordc, 'hint': $scope.hint}),
+          headers: {'Content-Type': 'application/json;charset=UTF-8'}
+      })
+      .then(function(response) {
+          var reply = response.data;
+         var authorization_token= reply['information'].data.token;
+         console.log(authorization_token);
+         
+                sessionStorage.currentUser=  reply['information'].data.user.id;
+                sessionStorage.email= reply['information'].data.user.email;
+                sessionStorage.fname= reply['information'].data.user.first_name;
+                sessionStorage.lname= reply['information'].data.user.last_name;
+        
+         
+         $location.path('/home');
+         $('#loading').hide();
+         alert('You have successfully created a new account now you may login');
+         
+         
+        //   if (reply.message == "failed"){
+        //       $route.reload();
+        //       $('#loading').hide();
+        //       alert("Registration failed. Please try again");
+        //   } else {
+        //       $location.path('/dashboard');
+        //       $('#loading').hide();
+        //       alert("You successfully registered.");
+        //   }
+          
+      })
+      .catch(function(error) {
+          $('#loading').hide();
+          alert(error);
+        });
+      
+    };
+    
+    $('#login-form-link').click(function(e) {
+    	e.preventDefault();
+    	$("#login-form").delay(100).fadeIn(100);
+     	$("#register-form").fadeOut(100);
+    	$('#register-form-link').removeClass('active');
+    	$(this).addClass('active');
+    	e.preventDefault();
+    });
+    $('#register-form-link').click(function(e) {
+    	e.preventDefault();
+    	$("#register-form").delay(100).fadeIn(100);
+     	$("#login-form").fadeOut(100);
+    	$('#login-form-link').removeClass('active');
+    	$(this).addClass('active');
+    	e.preventDefault();
+    });
+
+    
+    });
+
+    app.controller('NavbarCtrl', function($scope, $auth) {
+        $scope.isAuthenticated = function() {
+          return $auth.isAuthenticated();
+        };
+    });
+    
+    app.controller('cardctrl', function($scope, $http, $route){
+        
+
+        var share = document.getElementById('share');
+        
+        $scope.currentUser = sessionStorage.id;
+        $scope.email = sessionStorage.email;
+        $scope.fname = sessionStorage.fname;
+        $scope.lname = sessionStorage.lname;
         
         
+    // Request to render wishes on page load
+            
+        $http({
+            method: 'GET',
+            url: '/api/users/'+sessionStorage.currentUser+'/wishlist'
+            })
+            .then(function successCallback(response) {
+                var reply = response.data;
+                $scope.wishes = reply.data.wishes;
+
+        }, function errorCallback(response) {
+            //
+        });
+        
+    // Function to remove a wish to the database     
+        $scope.removeWish = function(itemid) {
+          // remove wish
+          $('#loading').show();
+          $http({
+                method: 'POST',
+                url: '/api/users/'+sessionStorage.currentUser+'/wishlist/'+itemid, 
+                data: JSON.stringify({itemid: itemid}),
+                headers: {'Content-Type': 'application/json;charset=UTF-8'}
+                })
+                .then(function (response) {
+                    // for (var i=0; i< response.data.thumbnails.length; i++){
+                        
+                    //     $scope.options.push(response.data.thumbnails[i]);
+                        
+                    // }
+                    // JSON.stringify($scope.options);
+                    // console.log($scope.options);
+                    
+                    $route.reload()
+                    $('#loading').hide();
+                });
+        };
+    });
+    
+    app.controller('modalctrl', function($scope,$http,$route) {
         var chosen;
-        
         var modal = document.getElementById('modal');
-        var wishList = JSON.stringify([]);
-        $scope.options = JSON.parse(wishList);
         
     // Displays Modal    
         $("#add").click(function(e){
             e.preventDefault();
             modal.style.display = "block";
-                
         });
-     
+        
+        
     // Hides the modal when the close button is clicked     
         $(".close").click(function() {
             modal.style.display = "none";
@@ -38,19 +220,24 @@ var app = angular.module('wish', []);
             }
         });
         
+    // Stores the selected image from the form    
+        $scope.chosenImg = function(index){
+            chosen = $scope.options[index];
+        };
+        
     // Listens for the click on the radion buttons on the form    
-        $('.form-check-input').click(function() {
+        $scope.scrape = function() {
+            $('#loading').show();
+            $scope.options = [];
             
             if ($('input[name=optionsRadios]:checked', '#form').val() == 'yes') {
-                
-                //var dest = '/api/thumbnails?url=' + loc;
-                //var loc = "http://www.caranddriver.com/best-sports-cars"
+
                 
             //Calls python function to scrape images from the given url.
                 $http({
                 method: 'POST',
                 url: '/api/thumbnails', 
-                //params: {'url': $scope.url},
+
                 data: JSON.stringify({url: $scope.url}),
                 headers: {'Content-Type': 'application/json;charset=UTF-8'}
                 })
@@ -61,46 +248,17 @@ var app = angular.module('wish', []);
                         
                     }
                     JSON.stringify($scope.options);
-                    console.log($scope.options);
+                    $('#loading').hide();
                 });
             } else {
                 // put random image
             }
-        });
-        
-    // Function to remove a wish to the database     
-        $scope.removeWish = function(index) {
-          // remove wish
-          $http({
-                method: 'POST',
-                url: '/api/users/{userid}/wishlist/{itemid}', 
-                data: JSON.stringify({itemid: index}),
-                headers: {'Content-Type': 'application/json;charset=UTF-8'}
-                })
-                .then(function (response) {
-                    for (var i=0; i< response.data.thumbnails.length; i++){
-                        
-                        $scope.options.push(response.data.thumbnails[i]);
-                        
-                    }
-                    JSON.stringify($scope.options);
-                    console.log($scope.options);
-                });
         };
         
-    // Stores the selected image from the form    
-        $scope.chosenImg = function(index){
-            chosen = $scope.options[index];
-            console.log(chosen);
-        };
-        
-    
     // Function to add a wish to the database     
         $scope.addWish = function () {
         //Gets details from form
-        var userid = $scope.userid;
-        console.log(userid);
-            
+            $('#loading').show();
             var details = {
                 title: $scope.title,
                 description: $scope.description,
@@ -110,43 +268,101 @@ var app = angular.module('wish', []);
             
             $http({
                 method: 'POST',
-                url: '/api/users/'+sessionStorage.getItem('current_user')+'/wishlist',
+                url: '/api/users/'+sessionStorage.currentUser+'/wishlist',
                 data: JSON.stringify(details),
                 headers: {'Content-Type': 'application/json'}
                 })
                 .then(function (response) {
-                    console.log("It was added.");
-                    $scope.options.push({
+                    $scope.wishes.push({
                         title: $scope.title,
                         description: $scope.description,
                         url: $scope.url,
-                        image: $scope.rating
-                });
+                        image: $scope.img
+                    });
+                // Resets form fields
+            
+                $scope.title = '';
+                $scope.description = '';
+                $scope.url = '';
+                $scope.img = '';
+                
+                
+                
+                $('#loading').hide();
+                $route.reload()
+
+                alert('Your Wish has been Added');
+            }).catch(function(error){
+                $('#loading').hide();
+                alert(error.data.message);
             });
             
-        // Resets form fields
+        
             
-            $scope.title = '';
-            $scope.description = '';
-            $scope.url = '';
-            $scope.img = '';
-            alert('Your Wish has been Added');
-            
-            
-            
-            // Add confirmation for the user to see
         };
         
         
+        
+////////////////////////////////////////////////////////////////////////////        
+    
+    });
+    
+    app.controller('sharectrl', function($scope, $http){
+        
+        var share = document.getElementById('share')
+        
+    // Displays Share form    
+        $("#shareb").click(function(e){
+            e.preventDefault();
+            share.style.display = "block";
+                
+        });    
+
+    
+    // Hides the share form when the close button is clicked     
+        $(".close1").click(function() {
+            share.style.display = "none";
+            
+        });
+        
+    // Hides the share form when the screen is clicked        
+        $(window).on('click', function(event) {
+        if (event.target == share) {
+            share.style.display = "none";
+            
+            }
+        });
+        
+            
         $scope.shareWish = function() {
             // Code for adding sharing wish
+            $('#loading').show();
+            var details = {
+                userid: sessionStorage.currentUser,
+                firstname: $scope.fname,
+                lastname: $scope.lname,
+                email: $scope.sendemail
+            };
+            
+            $http({
+                method: 'POST',
+                url: '/share/',
+                data: JSON.stringify(details),
+                headers: {'Content-Type': 'application/json'}
+                }).then(function(response){
+                    $('#loading').hide();
+                    alert(response.data.message);
+                })
+                .catch(function(error){
+                    $('#loading').hide();
+                    alert(error.data.message);
+                })
         };
+        
+        
         
         $scope.searchWish = function() {
             // Code for adding searching wish
+            alert('search function');
         };
-        
-        
-        
-        
-    });
+    })

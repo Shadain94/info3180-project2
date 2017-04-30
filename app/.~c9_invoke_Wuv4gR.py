@@ -63,10 +63,10 @@ def apiregister():
         user=  Person(first_name=firstname, last_name=lastname, username=username, password= password, email_address = email_address, pword_hint = pword_hint)
         db.session.add(user)
         db.session.commit()
-        token=create_token(user)
+        response = jsonify(token=token,information={"error":"null","data":{'token':token,'expires': timeinfo(payload['exp']),'user':{'id':user.id,'email': user.email_address,'firstname':user.firstname,'lastname':user.lasttname,'password':user.password,'username':user.username},"message":"Success"}})
         payload = jwt.decode(token,app.config['TOKEN_SECRET'], algorithm=['HS256']) 
         # return jsonify({"error":"null","data":{},"message":'Success'})
-        response = jsonify(token=token,information={"error":"null","data":{'token':token,'user':{'id':user.id,'email': user.email_address,'firstname':user.first_name,'lastname':user.last_name,'password':user.password,'username':user.username},"message":"Success"}})
+        response = jsonify(token=token,information={"error":"null","data":{'token':token,'expires': timeinfo(payload['exp']),'user':{'id':user.id,'email': user.email_address,'firstname':user.first_name,'lastname':user.last_name,'password':user.password,'username':user.username},"message":"Success"}})
     else:
         response= jsonify({"error":"1","message":'Registration failed. Please try again.'})
     
@@ -75,7 +75,7 @@ def apiregister():
 @app.route('/api/users/login', methods=["POST"])
 def login():
     """Render the website's login user page."""
-    
+    secret= app.config['TOKEN_SECRET']
     
    
     email= request.json['email']
@@ -83,7 +83,7 @@ def login():
     
     payload={"email": email,"password": password}
     
-    
+    encoded_token=jwt.encode({'logon_info': payload}, secret, algorithm='HS256'
     
         
     
@@ -91,8 +91,7 @@ def login():
     if user is not None:
         login_user(user)
         # Sends back the information along with the token generated
-        token=create_token(user)
-        response = jsonify(information={"error":"null","data":{'user':{'id':user.id,'email': user.email_address,'fname':user.first_name, 'lname': user.last_name, 'Authorization_token':token},"message":"Success"}})
+        response = jsonify(information={"error":"null","data":{'user':{'id':user.id,'email': user.email_address,'fname':user.first_name, 'lname': user.last_name, 'Authorization_token':encoded_token},"message":"Success"}})
     else:
         response = jsonify({"error":"1","data":{},"message":'failed'})
         response.status_code = 401

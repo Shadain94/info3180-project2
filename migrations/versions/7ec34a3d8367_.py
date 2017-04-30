@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 75057b96f9f8
+Revision ID: 7ec34a3d8367
 Revises: 
-Create Date: 2017-04-22 21:18:20.694973
+Create Date: 2017-04-29 07:32:30.646152
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '75057b96f9f8'
+revision = '7ec34a3d8367'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -30,14 +30,15 @@ def upgrade():
     sa.UniqueConstraint('username')
     )
     op.create_table('wish',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('wish_name_url', sa.String(length=250), nullable=True),
-    sa.Column('wish_id', sa.Integer(), nullable=True),
+    sa.Column('wish_id', sa.Integer(), nullable=False),
+    sa.Column('wish_url', sa.String(length=250), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('wish_descript', sa.String(length=40), nullable=True),
-    sa.Column('title', sa.String(length=30), nullable=True),
+    sa.Column('wish_title', sa.String(length=30), nullable=True),
     sa.Column('thumbnail', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['wish_id'], ['person.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('added', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['person.id'], ),
+    sa.PrimaryKeyConstraint('wish_id')
     )
     # ### end Alembic commands ###
 

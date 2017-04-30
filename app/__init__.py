@@ -4,9 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = " i have made a quite random key"
+app.config['TOKEN_SECRET'] = " now i have made a super secret token string"
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://good:best@localhost/better"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://wisher:pa$$word123@localhost/wishlist"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True # added just to suppress a warning
 
